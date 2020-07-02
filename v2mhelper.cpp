@@ -138,7 +138,7 @@ bool V2MHelper::initialize()
 
     const int64_t size = stdio_length(file);
     stdio_close(file);
- 
+
     if(load_and_convert(m_path.toLocal8Bit().constData(), &m_info->tune, &m_info->len) < 0)
     {
         return false;
