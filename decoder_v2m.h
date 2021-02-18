@@ -1,6 +1,6 @@
 /* =================================================
  * This file is part of the TTK qmmp plugin project
- * Copyright (C) 2015 - 2020 Greedysky Studio
+ * Copyright (C) 2015 - 2021 Greedysky Studio
 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ class V2MHelper;
 class DecoderV2M : public Decoder
 {
 public:
-    DecoderV2M(const QString &path);
+    explicit DecoderV2M(const QString &path);
     virtual ~DecoderV2M();
 
     // Standard Decoder API
@@ -41,6 +41,7 @@ public:
 
 private:
     V2MHelper* m_v2m;
+
 };
 
 #endif // DECODER_V2M_H

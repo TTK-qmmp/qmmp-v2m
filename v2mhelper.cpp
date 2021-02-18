@@ -1,6 +1,6 @@
 /* =================================================
  * This file is part of the TTK qmmp plugin project
- * Copyright (C) 2015 - 2020 Greedysky Studio
+ * Copyright (C) 2015 - 2021 Greedysky Studio
 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include "v2mhelper.h"
 #include "v2mconv.h"
 #include "sounddef.h"
-#include "libv2.h"
 
 extern "C" {
 #include "stdio_file.h"
@@ -99,10 +98,9 @@ int get_total_samples(V2MPlayer *player)
 
 
 V2MHelper::V2MHelper(const QString &path)
+    : m_path(path)
 {
-    m_path = path;
     m_info = (v2m_info_t*)calloc(sizeof(v2m_info_t), 1);
-    m_totalTime = 0;
 }
 
 V2MHelper::~V2MHelper()
@@ -130,17 +128,19 @@ void V2MHelper::close()
 
 bool V2MHelper::initialize()
 {
-    FILE *file = stdio_open(m_path.toLocal8Bit().constData());
+    FILE *file = stdio_open(qPrintable(m_path));
     if(!file)
     {
+        qWarning("V2MHelper: open file failed");
         return false;
     }
 
     const int64_t size = stdio_length(file);
     stdio_close(file);
 
-    if(load_and_convert(m_path.toLocal8Bit().constData(), &m_info->tune, &m_info->len) < 0)
+    if(load_and_convert(qPrintable(m_path), &m_info->tune, &m_info->len) < 0)
     {
+        qWarning("V2MHelper: load_and_convert error");
         return false;
     }
 
@@ -148,11 +148,11 @@ bool V2MHelper::initialize()
     m_info->player->Init();
     m_info->player->Open(m_info->tune);
 
-    m_totalTime = get_total_samples(m_info->player) / samplerate();
-    m_info->bitrate = size * 8.0 / m_totalTime;
-    m_info->readpos = 0;
+    m_totalTime = m_info->player->Length() * 1000;
+    m_info->bitrate = size * 8.0 / m_totalTime + 1.0f;
 
     m_info->player->Play();
+
     return true;
 }
 
@@ -163,31 +163,7 @@ int V2MHelper::totalTime() const
 
 void V2MHelper::seek(qint64 time)
 {
-    const int sample = time * samplerate();
-    if(sample >= m_info->totalsamples)
-    {
-        return; // seek beyond eof
-    }
-
-    if(sample < m_info->currsample)
-    {
-        m_info->player->Play(0);
-        m_info->currsample = 0;
-        m_info->readpos = 0;
-    }
-
-    float buffer[2048 * channels()];
-    while(m_info->currsample < sample)
-    {
-        int samples = sample - m_info->currsample;
-        if(samples > 2048)
-        {
-            samples = 2048;
-        }
-        m_info->player->Render(buffer, samples);
-        m_info->currsample += samples;
-    }
-    m_info->readpos = sample / (float)samplerate();
+    m_info->player->Play(time);
 }
 
 int V2MHelper::bitrate() const
@@ -195,7 +171,7 @@ int V2MHelper::bitrate() const
     return m_info->bitrate;
 }
 
-int V2MHelper::samplerate() const
+int V2MHelper::sampleRate() const
 {
     return 44100;
 }
@@ -212,17 +188,15 @@ int V2MHelper::bitsPerSample() const
 
 int V2MHelper::read(unsigned char *buf, int size)
 {
-    const int samplesize = (bitsPerSample() >> 3) * channels();
-    const int samples = size / samplesize;
-
-    if(m_info->currsample > m_info->totalsamples)
+    if(!m_info->player->IsPlaying())
     {
         return 0;
     }
 
+    const int samplesize = (bitsPerSample() >> 3) * channels();
+    const int samples = size / samplesize;
+
     m_info->player->Render((float*)buf, samples);
-    m_info->readpos += samples / (float)samplerate();
-    m_info->currsample += samples;
 
     return size;
 }
