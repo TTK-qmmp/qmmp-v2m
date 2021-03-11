@@ -2,6 +2,8 @@
 #include "decoder_v2m.h"
 #include "decoderv2mfactory.h"
 
+#include <QMessageBox>
+
 bool DecoderV2MFactory::canDecode(QIODevice *) const
 {
     return false;
@@ -59,4 +61,21 @@ MetaDataModel* DecoderV2MFactory::createMetaDataModel(const QString &path, bool 
     Q_UNUSED(path);
     Q_UNUSED(readOnly);
     return nullptr;
+}
+
+void DecoderV2MFactory::showSettings(QWidget *parent)
+{
+    Q_UNUSED(parent);
+}
+
+void DecoderV2MFactory::showAbout(QWidget *parent)
+{
+    QMessageBox::about (parent, tr("About V2M Reader Plugin"),
+                        tr("Qmmp V2M Reader Plugin")+"\n"+
+                        tr("Written by: Greedysky <greedysky@163.com>"));
+}
+
+QString DecoderV2MFactory::translation() const
+{
+    return QString();
 }

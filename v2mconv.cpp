@@ -323,13 +323,15 @@ void ConvertV2M(const unsigned char *inptr, const int inlen, unsigned char **out
 
     sInt *poffsets=(sInt *)base.patchmap;
     sInt *noffsets=(sInt *)newptr;
-    v2vsizes[vdelta]-255*3-1;
-
-    sU8 *nptr2=newptr;
 
     // copy patch table...
-    for (p=0; p<base.maxp; p++)
-        noffsets[p]=poffsets[p]+p*pdiff;
+    // gcc 5.3 seems to vectorize the loop, but
+    // the loop is not correct for base.maxp == 10 at least
+    // adding volatile to the iterator breaks the auto-vec
+    for (volatile int q = 0; q < base.maxp; q++)
+    {
+        noffsets[q] = poffsets[q] + (q * pdiff);
+    }
 
     newptr+=4*base.maxp;
 
@@ -337,10 +339,6 @@ void ConvertV2M(const unsigned char *inptr, const int inlen, unsigned char **out
     for (p=0; p<base.maxp; p++)
     {
         const sU8 *src=base.patchmap+poffsets[p];
-
-        const sU8 *dest_soll=nptr2+noffsets[p];
-        printf("p%d ist:%08x soll:%08x\n",p,newptr,dest_soll);
-
         // fill patch with default values
         memcpy(newptr,v2initsnd,v2nparms);
 

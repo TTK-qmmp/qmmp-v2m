@@ -1,6 +1,8 @@
 #ifndef _SOUNDDEF_H_
 #define _SOUNDDEF_H_
 
+#define __declspec(x)
+
 class file;
 
 // no problem if this header is included multiple times

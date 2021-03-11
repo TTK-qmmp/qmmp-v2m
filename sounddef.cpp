@@ -1,7 +1,6 @@
 //#include "stdafx.h"
 
 #include "types.h"
-#include "tool/file.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -63,9 +62,11 @@ void sdInit()
 	// init version control
 	v2version=0;
 	for (int i=0; i<v2nparms; i++)
-		if (v2parms[i].version>v2version) v2version=v2parms[i].version;
+		if (v2parms[i].version>v2version) 
+			v2version=v2parms[i].version;
 	for (int i=0; i<v2ngparms; i++)
-		if (v2gparms[i].version>v2version) v2version=v2gparms[i].version;
+		if (v2gparms[i].version>v2version) 
+			v2version=v2gparms[i].version;
 
 	v2vsizes = new int[v2version+1];
 	v2gsizes = new int[v2version+1];
@@ -127,7 +128,7 @@ void sdClose()
 }
 
 
-
+#if FILE_IO
 static sBool sdLoadPatch(file &in, sInt pn, sInt fver=-1)
 {
 	if (fver==-1)
@@ -169,7 +170,8 @@ static sBool sdLoadBank(file &in)
 	int   i,fver=-1;
 	int  sml, pw;
 
-	if (in.read(patchnames,128*32)<128*32) return 0;
+	if (in.read(patchnames,128*32)<128*32) 
+		return 0;
 	sml=in.getsU32();
 	pw=sml/128;
 
@@ -179,7 +181,8 @@ static sBool sdLoadBank(file &in)
 	in.seekcur(-(sml+4));
 
 	for (i=0; i<=v2version; i++)
-		if (pw==v2vsizes[i] && globsize==v2gsizes[i]) fver=i;
+		if (pw==v2vsizes[i] && globsize==v2gsizes[i])
+			fver=i;
 
 	if (fver==-1)
 	{
@@ -205,7 +208,8 @@ static sBool sdLoadBank(file &in)
 		}
 		else
 		{
-			if (in.read(globals,v2ngparms)<v2ngparms) return 0;
+			if (in.read(globals,v2ngparms)<v2ngparms)
+				return 0;
 			in.seekcur(sml-v2ngparms);
 		}
 	}
@@ -289,7 +293,7 @@ sBool sdSavePatch(file &out)
 
 	return 1;
 }
-
+#endif
 
 void sdCopyPatch()
 {
@@ -309,7 +313,7 @@ void sdInitPatch()
 	sprintf(patchnames[v2curpatch],"Init Patch #%03d",v2curpatch);
 }
 
-const char *v2sources[] = {
+__declspec(selectany) const char *v2sources[] = {
     "Velocity",
     "Modulation",
     "Breath",
