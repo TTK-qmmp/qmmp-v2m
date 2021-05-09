@@ -1,6 +1,7 @@
 #include "v2mhelper.h"
 #include "v2mconv.h"
 #include "sounddef.h"
+#include <math.h>
 
 extern "C" {
 #include "stdio_file.h"
@@ -15,9 +16,9 @@ int load_and_convert(const char *fname, uint8_t **conv, int *convlen)
         return -1;
     }
     // probe
-    int len = (int)stdio_length(fp);
+    const int64_t len = (int)stdio_length(fp);
     unsigned char *buf = (unsigned char *)malloc(len);
-    int rb = (int)stdio_read(buf, 1, len, fp);
+    const int rb = (int)stdio_read(buf, 1, len, fp);
     stdio_close(fp);
 
     if(rb != len)
@@ -33,7 +34,7 @@ int load_and_convert(const char *fname, uint8_t **conv, int *convlen)
     }
 
     ssbase base;
-    int ver = CheckV2MVersion(buf, len, base);
+    const int ver = CheckV2MVersion(buf, len, base);
     if(ver < 0)
     {
         free(buf);

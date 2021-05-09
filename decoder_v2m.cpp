@@ -20,8 +20,8 @@ bool DecoderV2M::initialize()
         return false;
     }
 
-    int rate = m_v2m->sampleRate();
-    int channels = m_v2m->channels();
+    const int rate = m_v2m->sampleRate();
+    const int channels = m_v2m->channels();
     if(rate == 0 || channels == 0)
     {
         qWarning("DecoderV2M: rate or channel invalid");
@@ -29,7 +29,7 @@ bool DecoderV2M::initialize()
     }
 
     configure(rate, channels, Qmmp::PCM_FLOAT);
-
+    qDebug("DecoderV2M: initialize succes");
     return true;
 }
 
