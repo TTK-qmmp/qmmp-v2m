@@ -84,7 +84,7 @@ int get_total_samples(V2MPlayer *player)
 V2MHelper::V2MHelper(const QString &path)
     : m_path(path)
 {
-    m_info = (v2m_info_t*)calloc(sizeof(v2m_info_t), 1);
+    m_info = (v2m_info*)calloc(sizeof(v2m_info), 1);
 }
 
 V2MHelper::~V2MHelper()
@@ -122,7 +122,8 @@ bool V2MHelper::initialize()
     const int64_t size = stdio_length(file);
     stdio_close(file);
 
-    if(load_and_convert(qPrintable(m_path), &m_info->tune, &m_info->len) < 0)
+    int convlen;
+    if(load_and_convert(qPrintable(m_path), &m_info->tune, &convlen) < 0)
     {
         qWarning("V2MHelper: load_and_convert error");
         return false;
@@ -132,9 +133,7 @@ bool V2MHelper::initialize()
     m_info->player->Init();
     m_info->player->Open(m_info->tune);
 
-    m_totalTime = m_info->player->Length() * 1000;
-    m_info->bitrate = size * 8.0 / m_totalTime + 1.0f;
-
+    m_info->bitrate = size * 8.0 / totalTime() + 1.0f;
     m_info->player->Play();
 
     return true;
@@ -142,7 +141,7 @@ bool V2MHelper::initialize()
 
 int V2MHelper::totalTime() const
 {
-    return m_totalTime;
+    return m_info->player->Length() * 1000;
 }
 
 void V2MHelper::seek(qint64 time)
