@@ -3,30 +3,9 @@
 #include "sounddef.h"
 #include <math.h>
 
-extern "C" {
-#include "stdio_file.h"
-}
-
-bool v2m_initialized = false;
-int load_and_convert(const char *fname, uint8_t **conv, int *convlen)
+static bool v2m_initialized = false;
+int load_and_convert(unsigned char *module, qint64 size, uint8_t **conv, int *convlen)
 {
-    FILE *fp = stdio_open(fname);
-    if(!fp)
-    {
-        return -1;
-    }
-    // probe
-    const int64_t len = (int)stdio_length(fp);
-    unsigned char *buf = (unsigned char *)malloc(len);
-    const int rb = (int)stdio_read(buf, 1, len, fp);
-    stdio_close(fp);
-
-    if(rb != len)
-    {
-        free(buf);
-        return -1;
-    }
-
     if(!v2m_initialized)
     {
         sdInit();
@@ -34,50 +13,14 @@ int load_and_convert(const char *fname, uint8_t **conv, int *convlen)
     }
 
     ssbase base;
-    const int ver = CheckV2MVersion(buf, len, base);
+    const int ver = CheckV2MVersion(module, size, base);
     if(ver < 0)
     {
-        free(buf);
         return -1;
     }
 
-    ConvertV2M(buf, len, conv, convlen);
-    free(buf);
-
+    ConvertV2M(module, size, conv, convlen);
     return 0;
-}
-
-int get_total_samples(V2MPlayer *player)
-{
-    int totalsamples = 0;
-    float buffer[2048 * 2];
-    bool had_nonsilence = false;
-
-    while(true)
-    {
-        player->Render(buffer, 2048);
-        bool eof = true;
-        for(int i = 0; i < 2048*2; i++)
-        {
-            float v = fabs(buffer[i]);
-            if(v > 0.0000001f)
-            {
-                eof = false;
-                if(totalsamples > 44100*2)
-                {
-                    had_nonsilence = true;
-                }
-                break;
-            }
-        }
-
-        if(eof && had_nonsilence)
-        {
-            break;
-        }
-        totalsamples += 2048;
-    }
-    return totalsamples;
 }
 
 
@@ -89,10 +32,10 @@ V2MHelper::V2MHelper(const QString &path)
 
 V2MHelper::~V2MHelper()
 {
-    close();
+    deinit();
 }
 
-void V2MHelper::close()
+void V2MHelper::deinit()
 {
     if(m_info) 
     {
@@ -112,18 +55,18 @@ void V2MHelper::close()
 
 bool V2MHelper::initialize()
 {
-    FILE *file = stdio_open(qPrintable(m_path));
-    if(!file)
+    QFile file(m_path);
+    if(!file.open(QFile::ReadOnly))
     {
         qWarning("V2MHelper: open file failed");
         return false;
     }
 
-    const int64_t size = stdio_length(file);
-    stdio_close(file);
+    const qint64 size = file.size();
+    const QByteArray module = file.readAll();
 
     int convlen;
-    if(load_and_convert(qPrintable(m_path), &m_info->tune, &convlen) < 0)
+    if(load_and_convert((unsigned char *)module.constData(), size, &m_info->tune, &convlen) < 0)
     {
         qWarning("V2MHelper: load_and_convert error");
         return false;

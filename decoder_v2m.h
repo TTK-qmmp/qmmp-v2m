@@ -40,8 +40,8 @@ public:
     virtual void seek(qint64 time) override;
 
 private:
-    V2MHelper* m_v2m;
+    V2MHelper* m_helper;
 
 };
 
-#endif // DECODER_V2M_H
+#endif
