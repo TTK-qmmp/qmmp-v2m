@@ -4,22 +4,17 @@ TARGET = $$PLUGINS_PREFIX/Input/v2m
 
 HEADERS += decoderv2mfactory.h \
            decoder_v2m.h \
-           v2mhelper.h \
-           libv2.h \
-           sounddef.h \
-           synth.h \
-           v2mconv.h \
-           v2mplayer.h
+           v2mhelper.h
     
 SOURCES += decoderv2mfactory.cpp \
            decoder_v2m.cpp \
            v2mhelper.cpp \
-           sounddef.cpp \
-           synth_core.cpp \
-           v2mconv.cpp \
-           v2mplayer.cpp
+           libv2m/sounddef.cpp \
+           libv2m/synth_core.cpp \
+           libv2m/v2mconv.cpp \
+           libv2m/v2mplayer.cpp
 
-INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD/libv2m
 
 unix {
     target.path = $$PLUGIN_DIR/Input
