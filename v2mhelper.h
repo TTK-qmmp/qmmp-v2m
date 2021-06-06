@@ -20,13 +20,13 @@
 #define V2MHELPER_H
 
 #include <QFile>
-#include "v2mplayer.h"
+#include <libv2m/v2mplayer.h>
 
 typedef struct {
     uint8_t *tune;
     int bitrate;
-    V2MPlayer *player;
-} v2m_info;
+    V2MPlayer *input;
+} decode_info;
 
 /*!
  * @author Greedysky <greedysky@163.com>
@@ -52,7 +52,7 @@ public:
 
 private:
     QString m_path;
-    v2m_info *m_info;
+    decode_info *m_info;
 
 };
 
