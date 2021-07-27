@@ -34,6 +34,12 @@ void UpdateSampleDelta(uint32_t nexttime, uint32_t time, uint32_t usecs, uint32_
 }
 }
 
+void V2MPlayer::Init(uint32_t a_tickspersec)
+{
+  m_tpc = a_tickspersec;
+  memset(&m_base, 0, sizeof(V2MBase));
+}
+
 bool V2MPlayer::InitBase(const void* a_v2m)
 {
   const uint8_t* d = (const uint8_t *)a_v2m;
@@ -149,6 +155,7 @@ void V2MPlayer::Reset()
   m_state.beat    = 0;
   m_state.tick    = 0;
   m_state.smplrem = 0;
+  m_state.cursmpl = 0;
 
   if (m_samplerate)
   {
@@ -312,6 +319,7 @@ void V2MPlayer::Play(uint32_t a_time)
       m_state.smpldelta = -1;
   }
 
+  m_state.cursmpl    = cursmpl;
   m_state.smpldelta -= (destsmpl - cursmpl);
   m_fadeval          = 1.0f;
   m_fadedelta        = 0.0f;
@@ -351,6 +359,7 @@ void V2MPlayer::Render(float* a_buffer, uint32_t a_len, bool a_add)
         m_state.smpldelta -= torender;
         m_state.cursmpl   += torender;
       }
+
       if (!m_state.smpldelta)
       {
         Tick();
@@ -389,11 +398,6 @@ void V2MPlayer::Render(float* a_buffer, uint32_t a_len, bool a_add)
   }
 }
 
-bool V2MPlayer::NoEnd()
-{
-  return ((m_base.maxtime * m_base.timediv) > m_state.cursmpl);
-}
-
 uint32_t V2MPlayer::Length()
 {
   return ((m_base.maxtime * m_base.timediv) / m_samplerate + 1);
@@ -401,7 +405,7 @@ uint32_t V2MPlayer::Length()
 
 bool V2MPlayer::IsPlaying()
 {
-  return m_base.valid && m_state.state == PlayerState::PLAYING;
+  return (m_base.valid && m_state.state == PlayerState::PLAYING) && ((m_base.maxtime * m_base.timediv) > m_state.cursmpl);
 }
 
 

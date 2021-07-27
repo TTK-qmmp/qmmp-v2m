@@ -24,10 +24,7 @@ class V2MPlayer
 public:
   // init
   // call this instead of a constructor
-  void Init(uint32_t a_tickspersec = 1000)
-  {
-    m_tpc = a_tickspersec; /* m_base.valid=0; */ memset(&m_base, 0, sizeof(V2MBase));
-  }
+  void Init(uint32_t a_tickspersec = 1000);
 
   // opens a v2m file for playing
   //
@@ -78,9 +75,6 @@ public:
     reinterpret_cast<V2MPlayer *>(a_this)->Render(a_buffer, a_len);
   }
 
-  // returns if song is currently end
-  bool NoEnd();
-
   // returns if song length
   uint32_t Length();
 
@@ -115,9 +109,7 @@ public:
   // ------------------------------------------------------------------------------------------------------
 
 private:
-
   // struct defs
-
   // General info from V2M file
   struct V2MBase
   {

@@ -14,11 +14,45 @@ extern const char * const v2mconv_errors[] =
   "V2M file was made with unknown synth version!",
 };
 
-static ssbase readfile(const unsigned char* inptr, const int inlen)
+static struct _ssbase
+{
+  const uint8_t* patchmap;
+  const uint8_t* globals;
+  uint32_t timediv;
+  uint32_t timediv2;
+  uint32_t maxtime;
+  const uint8_t* gptr;
+  uint32_t gdnum;
+  struct _basech
+  {
+    uint32_t notenum;
+    const uint8_t* noteptr;
+    uint32_t pcnum;
+    const uint8_t* pcptr;
+    uint32_t pbnum;
+    const uint8_t* pbptr;
+    struct _bcctl
+    {
+      uint32_t ccnum;
+      const uint8_t* ccptr;
+    } ctl[7];
+  } chan[16];
+
+  const uint8_t* mididata;
+  int midisize;
+  int patchsize;
+  int globsize;
+  int maxp;
+  const uint8_t* newpatchmap;
+
+  const uint8_t* speechdata;
+  int spsize;
+} base;
+
+static void readfile(const unsigned char* inptr, const int inlen)
 {
   const uint8_t* d = inptr;
-  ssbase         base;
-  memset(&base, 0, sizeof(base));
+  memset(&base, 0, sizeof(_ssbase));
 
   base.timediv  = (*((uint32_t *)(d)));
   base.timediv2 = 10000*base.timediv;
@@ -29,7 +63,7 @@ static ssbase readfile(const unsigned char* inptr, const int inlen)
   d            += 10*base.gdnum;
   for (int ch = 0; ch < 16; ch++)
   {
-    ssbase::_basech& c = base.chan[ch];
+    _ssbase::_basech& c = base.chan[ch];
     c.notenum = *((uint32_t *)d);
     d        += 4;
     if (c.notenum)
@@ -46,7 +80,7 @@ static ssbase readfile(const unsigned char* inptr, const int inlen)
       d        += 5*c.pbnum;
       for (int cn = 0; cn < 7; cn++)
       {
-        ssbase::_basech::_bcctl& cc = c.ctl[cn];
+        _ssbase::_basech::_bcctl& cc = c.ctl[cn];
         cc.ccnum = *((uint32_t *)d);
         d       += 4;
         cc.ccptr = d;
@@ -57,13 +91,13 @@ static ssbase readfile(const unsigned char* inptr, const int inlen)
   base.midisize = d - inptr;
   base.globsize = *((uint32_t *)d);
   if (base.globsize < 0 || base.globsize > 131072)
-    return base;
+    return;
   d             += 4;
   base.globals   = d;
   d             += base.globsize;
   base.patchsize = *((uint32_t *)d);
   if (base.patchsize < 0 || base.patchsize > 1048576)
-    return base;
+    return;
   d            += 4;
   base.patchmap = d;
   d            += base.patchsize;
@@ -73,18 +107,14 @@ static ssbase readfile(const unsigned char* inptr, const int inlen)
     base.spsize     = *((uint32_t *)d);
     d              += 4;
     base.speechdata = d;
+    d              += base.spsize;
 
     // small sanity check
-    if (base.spsize < 0 || base.spsize > 8192)
+    if (base.spsize < 0 || base.spsize > 8192 || (d - inptr) > inlen)
     {
       base.spsize     = 0;
       base.speechdata = 0;
     }
-    else if (base.spsize > inlen - (d - inptr))
-    {
-      base.spsize = inlen - (d - inptr);
-    }
-    d += base.spsize;
   }
   else
   {
@@ -94,15 +124,14 @@ static ssbase readfile(const unsigned char* inptr, const int inlen)
 
   printf2("after read: est %d, is %d\n", inlen, d - inptr);
   printf2("midisize: %d, globs: %d, patches: %d\n", base.midisize, base.globsize, base.patchsize);
-  return base;
 }
 
 // gives version deltas
-int CheckV2MVersion(const unsigned char* inptr, const int inlen, ssbase& base)
+int CheckV2MVersion(const unsigned char* inptr, const int inlen)
 {
   int i;
   int patchesused[128];
-  base = readfile(inptr, inlen);
+  readfile(inptr, inlen);
 
   if (!base.patchsize)
     return -1;
@@ -227,10 +256,9 @@ int CheckV2MVersion(const unsigned char* inptr, const int inlen, ssbase& base)
 
 void ConvertV2M(const unsigned char* inptr, const int inlen, unsigned char* * outptr, int* outlen)
 {
-  int    i, p;
-  ssbase base;
+  int i, p;
   // check version
-  int vdelta = CheckV2MVersion(inptr, inlen, base);
+  int vdelta = CheckV2MVersion(inptr, inlen);
   if (!vdelta)   // if same, simply clone
   {
     *outptr = new uint8_t[inlen + 4];
