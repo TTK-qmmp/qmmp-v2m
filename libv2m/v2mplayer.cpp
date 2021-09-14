@@ -405,7 +405,7 @@ uint32_t V2MPlayer::Length()
 
 bool V2MPlayer::IsPlaying()
 {
-  return (m_base.valid && m_state.state == PlayerState::PLAYING) && ((m_base.maxtime * m_base.timediv) > m_state.cursmpl);
+  return m_base.valid && m_state.state == PlayerState::PLAYING;
 }
 
 
