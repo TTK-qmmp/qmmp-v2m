@@ -1,6 +1,6 @@
+#include "decoderv2mfactory.h"
 #include "v2mhelper.h"
 #include "decoder_v2m.h"
-#include "decoderv2mfactory.h"
 
 #include <QMessageBox>
 
@@ -12,11 +12,10 @@ bool DecoderV2MFactory::canDecode(QIODevice *) const
 DecoderProperties DecoderV2MFactory::properties() const
 {
     DecoderProperties properties;
-    properties.name = "V2M Plugin";
+    properties.name = tr("V2M Plugin");
     properties.shortName = "v2m";
     properties.filters << "*.v2m";
     properties.description = "V2 Module Player File";
-    properties.protocols << "file";
     properties.noInput = true;
     return properties;
 }
@@ -30,7 +29,6 @@ Decoder *DecoderV2MFactory::create(const QString &path, QIODevice *input)
 QList<TrackInfo*> DecoderV2MFactory::createPlayList(const QString &path, TrackInfo::Parts parts, QStringList *)
 {
     TrackInfo *info = new TrackInfo(path);
-
     if(parts == TrackInfo::Parts())
     {
         return QList<TrackInfo*>() << info;
@@ -48,11 +46,10 @@ QList<TrackInfo*> DecoderV2MFactory::createPlayList(const QString &path, TrackIn
         info->setValue(Qmmp::BITRATE, helper.bitrate());
         info->setValue(Qmmp::SAMPLERATE, helper.sampleRate());
         info->setValue(Qmmp::CHANNELS, helper.channels());
-        info->setValue(Qmmp::BITS_PER_SAMPLE, helper.bitsPerSample());
+        info->setValue(Qmmp::BITS_PER_SAMPLE, helper.depth());
         info->setValue(Qmmp::FORMAT_NAME, "V2M");
         info->setDuration(helper.totalTime());
     }
-
     return QList<TrackInfo*>() << info;
 }
 
