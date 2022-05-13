@@ -4,9 +4,16 @@
 
 #include <QMessageBox>
 
-bool DecoderV2MFactory::canDecode(QIODevice *) const
+bool DecoderV2MFactory::canDecode(QIODevice *input) const
 {
-    return false;
+    QFile *file = static_cast<QFile*>(input);
+    if(!file)
+    {
+        return false;
+    }
+
+    V2MHelper helper(file->fileName());
+    return helper.initialize();
 }
 
 DecoderProperties DecoderV2MFactory::properties() const
@@ -16,6 +23,7 @@ DecoderProperties DecoderV2MFactory::properties() const
     properties.shortName = "v2m";
     properties.filters << "*.v2m";
     properties.description = "V2 Module Player File";
+    properties.protocols << "file";
     properties.noInput = true;
     return properties;
 }
@@ -47,7 +55,7 @@ QList<TrackInfo*> DecoderV2MFactory::createPlayList(const QString &path, TrackIn
         info->setValue(Qmmp::SAMPLERATE, helper.sampleRate());
         info->setValue(Qmmp::CHANNELS, helper.channels());
         info->setValue(Qmmp::BITS_PER_SAMPLE, helper.depth());
-        info->setValue(Qmmp::FORMAT_NAME, "V2M");
+        info->setValue(Qmmp::FORMAT_NAME, "V2 Module");
         info->setDuration(helper.totalTime());
     }
     return QList<TrackInfo*>() << info;

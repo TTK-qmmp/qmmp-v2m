@@ -75,7 +75,7 @@ public:
     reinterpret_cast<V2MPlayer *>(a_this)->Render(a_buffer, a_len);
   }
 
-  // returns if song length
+  // returns song length
   uint32_t Length();
 
   // returns if song is currently playing

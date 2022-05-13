@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define printf2(str, ...)
+#define UPDATEOFFSET(d, offset) d += offset; if (d - inptr >= inlen) return;
 
 extern const char * const v2mconv_errors[] =
 {
@@ -54,60 +55,69 @@ static void readfile(const unsigned char* inptr, const int inlen)
   const uint8_t* d = inptr;
   memset(&base, 0, sizeof(_ssbase));
 
-  base.timediv  = (*((uint32_t *)(d)));
+  base.timediv  = *((uint32_t *)d);
   base.timediv2 = 10000*base.timediv;
-  base.maxtime  = *((uint32_t *)(d + 4));
-  base.gdnum    = *((uint32_t *)(d + 8));
-  d            += 12;
-  base.gptr     = d;
-  d            += 10*base.gdnum;
+  UPDATEOFFSET(d, 4);
+  base.maxtime = *((uint32_t *)d);
+  UPDATEOFFSET(d, 4);
+  base.gdnum = *((uint32_t *)d);
+  UPDATEOFFSET(d, 4);
+  base.gptr = d;
+  UPDATEOFFSET(d, 10*base.gdnum);
+
   for (int ch = 0; ch < 16; ch++)
   {
     _ssbase::_basech& c = base.chan[ch];
     c.notenum = *((uint32_t *)d);
-    d        += 4;
+    UPDATEOFFSET(d, 4);
+
     if (c.notenum)
     {
       c.noteptr = d;
-      d        += 5*c.notenum;
-      c.pcnum   = *((uint32_t *)d);
-      d        += 4;
-      c.pcptr   = d;
-      d        += 4*c.pcnum;
-      c.pbnum   = *((uint32_t *)d);
-      d        += 4;
-      c.pbptr   = d;
-      d        += 5*c.pbnum;
+      UPDATEOFFSET(d, 5*c.notenum);
+      c.pcnum = *((uint32_t *)d);
+      UPDATEOFFSET(d, 4);
+      c.pcptr = d;
+      UPDATEOFFSET(d, 4*c.pcnum);
+      c.pbnum = *((uint32_t *)d);
+      UPDATEOFFSET(d, 4);
+      c.pbptr = d;
+      UPDATEOFFSET(d, 5*c.pbnum);
+
       for (int cn = 0; cn < 7; cn++)
       {
         _ssbase::_basech::_bcctl& cc = c.ctl[cn];
         cc.ccnum = *((uint32_t *)d);
-        d       += 4;
+        UPDATEOFFSET(d, 4);
         cc.ccptr = d;
-        d       += 4*cc.ccnum;
+        UPDATEOFFSET(d, 4*cc.ccnum);
       }
     }
   }
+
   base.midisize = d - inptr;
   base.globsize = *((uint32_t *)d);
   if (base.globsize < 0 || base.globsize > 131072)
     return;
-  d             += 4;
-  base.globals   = d;
-  d             += base.globsize;
+
+  UPDATEOFFSET(d, 4);
+  base.globals = d;
+  UPDATEOFFSET(d, base.globsize);
   base.patchsize = *((uint32_t *)d);
+
   if (base.patchsize < 0 || base.patchsize > 1048576)
     return;
-  d            += 4;
+
+  UPDATEOFFSET(d, 4);
   base.patchmap = d;
-  d            += base.patchsize;
+  UPDATEOFFSET(d, base.patchsize);
 
   if (d - inptr < inlen)
   {
-    base.spsize     = *((uint32_t *)d);
-    d              += 4;
+    base.spsize = *((uint32_t *)d);
+    UPDATEOFFSET(d, 4);
     base.speechdata = d;
-    d              += base.spsize;
+    UPDATEOFFSET(d, base.spsize);
 
     // small sanity check
     if (base.spsize < 0 || base.spsize > 8192 || (d - inptr) > inlen)
@@ -387,3 +397,4 @@ void ConvertV2M(const unsigned char* inptr, const int inlen, unsigned char* * ou
 
   printf2("est size: %d, real size: %d\n", newsize, newptr - *outptr);
 }
+

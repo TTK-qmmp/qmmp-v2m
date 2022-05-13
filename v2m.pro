@@ -1,4 +1,4 @@
-include(../../plugins.pri)
+include($$PWD/../../plugins.pri)
 
 TARGET = $$PLUGINS_PREFIX/Input/v2m
 
