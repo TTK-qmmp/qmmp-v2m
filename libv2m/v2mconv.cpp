@@ -100,24 +100,24 @@ static void readfile(const unsigned char* inptr, const int inlen)
   if (base.globsize < 0 || base.globsize > 131072)
     return;
 
-  UPDATEOFFSET(d, 4);
-  base.globals = d;
-  UPDATEOFFSET(d, base.globsize);
+  d             += 4;
+  base.globals   = d;
+  d             += base.globsize;
   base.patchsize = *((uint32_t *)d);
 
   if (base.patchsize < 0 || base.patchsize > 1048576)
     return;
 
-  UPDATEOFFSET(d, 4);
+  d            += 4;
   base.patchmap = d;
-  UPDATEOFFSET(d, base.patchsize);
+  d            += base.patchsize;
 
   if (d - inptr < inlen)
   {
-    base.spsize = *((uint32_t *)d);
-    UPDATEOFFSET(d, 4);
+    base.spsize     = *((uint32_t *)d);
+    d              += 4;
     base.speechdata = d;
-    UPDATEOFFSET(d, base.spsize);
+    d              += base.spsize;
 
     // small sanity check
     if (base.spsize < 0 || base.spsize > 8192 || (d - inptr) > inlen)
@@ -397,4 +397,3 @@ void ConvertV2M(const unsigned char* inptr, const int inlen, unsigned char* * ou
 
   printf2("est size: %d, real size: %d\n", newsize, newptr - *outptr);
 }
-
