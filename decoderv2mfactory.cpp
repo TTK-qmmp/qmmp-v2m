@@ -25,6 +25,7 @@ DecoderProperties DecoderV2MFactory::properties() const
     properties.description = "V2 Module Player File";
     properties.protocols << "file";
     properties.noInput = true;
+    properties.hasAbout = true;
     return properties;
 }
 
