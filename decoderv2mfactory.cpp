@@ -75,9 +75,9 @@ void DecoderV2MFactory::showSettings(QWidget *parent)
 
 void DecoderV2MFactory::showAbout(QWidget *parent)
 {
-    QMessageBox::about (parent, tr("About V2M Reader Plugin"),
-                        tr("Qmmp V2M Reader Plugin")+"\n"+
-                        tr("Written by: Greedysky <greedysky@163.com>"));
+    QMessageBox::about(parent, tr("About V2M Reader Plugin"),
+                       tr("Qmmp V2M Reader Plugin") + "\n" +
+                       tr("Written by: Greedysky <greedysky@163.com>"));
 }
 
 QString DecoderV2MFactory::translation() const
