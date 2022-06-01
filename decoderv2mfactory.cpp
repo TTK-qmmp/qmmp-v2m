@@ -1,6 +1,7 @@
 #include "decoderv2mfactory.h"
 #include "v2mhelper.h"
 #include "decoder_v2m.h"
+#include "archivereader.h"
 
 #include <QMessageBox>
 
@@ -22,6 +23,7 @@ DecoderProperties DecoderV2MFactory::properties() const
     properties.name = tr("V2M Plugin");
     properties.shortName = "v2m";
     properties.filters << "*.v2m";
+    properties.filters << ArchiveReader::filters();
     properties.description = "V2 Module Player File";
     properties.protocols << "file";
     properties.noInput = true;
