@@ -1,5 +1,4 @@
 #include "v2mhelper.h"
-#include "archivereader.h"
 
 #include <libv2m/v2mconv.h>
 #include <libv2m/sounddef.h>
@@ -58,7 +57,7 @@ bool V2MHelper::initialize()
         return false;
     }
 
-    const QByteArray &buffer = ArchiveReader::isSupported(m_path) ? ArchiveReader::unpack(m_path) : file.readAll();
+    const QByteArray &buffer = file.readAll();
     file.close();
 
     if(buffer.isEmpty())
