@@ -18,8 +18,6 @@ SOURCES += decoderv2mfactory.cpp \
            libv2m/v2mconv.cpp \
            libv2m/v2mplayer.cpp
 
-INCLUDEPATH += $$PWD/libv2m
-
 #CONFIG += BUILD_PLUGIN_INSIDE
 contains(CONFIG, BUILD_PLUGIN_INSIDE){
     include($$PWD/../../plugins.pri)
