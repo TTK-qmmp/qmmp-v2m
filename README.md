@@ -1,5 +1,6 @@
 This is a plugin for Qmmp (1.6.0 or greater) which supports V2M file.
-(V2 Module Player File)
+
+Based on [V2 Module](https://github.com/jgilje/v2m-player) (V2 module player).
 
 The following packages are required, including development headers,
 which some vendors split into separate packages:
