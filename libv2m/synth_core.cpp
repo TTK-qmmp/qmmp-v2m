@@ -186,6 +186,7 @@ static inline float sqr(float x)
   return x*x;
 }
 
+namespace {
 template<typename T>
 static inline T min(T a, T b)
 {
@@ -238,6 +239,7 @@ static inline uint32_t ftou32(float v)
 static inline float lerp(float a, float b, float t)
 {
   return a + t * (b-a);
+}
 }
 
 // DEBUG
@@ -851,7 +853,7 @@ private:
       output(dest + i, gain * x);
     }
 
-    flt   = nf;
+    nf = flt;
     nseed = seed;
   }
 
@@ -2036,7 +2038,7 @@ private:
     // linear interpolation using low-order bits of offs32_32.
     float* delaybuf = db[ch];
     float  x        = utof23((uint32_t)(offs32_32 & 0xffffffffu));
-    float  delayed  = lerp(delaybuf[(index - 0) & dbufmask], delaybuf[(index - 1) & dbufmask], x);
+    float  delayed  = ::lerp(delaybuf[(index - 0) & dbufmask], delaybuf[(index - 1) & dbufmask], x);
 
     // mix and output
     delaybuf[dbptr] = in + delayed*fbval;
